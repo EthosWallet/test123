@@ -1,174 +1,305 @@
 version: '3.8'
 
-# Test Docker Compose for Dependency Confusion and Repository Jacking Detection
-# This file contains intentional vulnerabilities for testing purposes
+# COMPREHENSIVE Docker Compose Test for Dependency Confusion Detection
+# Tests ALL 17 platforms with multiple detection vectors per platform
+# Expected to trigger 100+ dependency confusion vulnerabilities
 
 services:
-  # Service 1: Custom image repository jacking test
-  web-app:
-    image: fake-company/internal-webapp:latest
-    container_name: vulnerable-webapp
-    ports:
-      - "8080:8080"
+  # Service 1: Environment Variables - Platforms 1-6
+  platform-env-test-1:
+    image: fake-company/env-test:latest
     environment:
-      # Environment variables referencing internal packages
-      - PYTHON_PACKAGE=company-internal-lib==1.2.3
-      - NODE_MODULE=@company/secret-utils
-      - RUBY_GEM=internal-company-gem
-      - GO_MODULE=github.com/company/private-module
+      # NPM packages in environment variables
+      - NPM_PACKAGE=@company-internal/auth-sdk
+      - NODE_MODULE=company-private-utils
+      - YARN_INSTALL=@internal/shared-components
+      - PNPM_PACKAGE=fake-company-analytics
+      
+      # PyPI packages in environment variables  
+      - PIP_PACKAGE=company-internal-lib
+      - PYTHON_MODULE=internal-auth-middleware
+      - PIPENV_INSTALL=company-config-loader
+      - POETRY_PACKAGE=fake-company-core
+      
+      # RubyGems packages in environment variables
+      - GEM_PACKAGE=company-internal-gem
+      - BUNDLE_INSTALL=internal-auth-gem
+      - RUBY_MODULE=company-shared-utilities
+      - GEMFILE_PACKAGE=fake-internal-rblib
+      
+      # Maven packages in environment variables
       - MAVEN_ARTIFACT=com.company:internal-lib:1.0.0
-      - NUGET_PACKAGE=Company.InternalPackage
-      - CARGO_CRATE=company-internal-crate
-      - COMPOSER_PACKAGE=company/private-package
-      - DOCKER_IMAGE=company-registry/internal-tool:v2.1
-      - HELM_CHART=company/internal-chart
-      - TERRAFORM_MODULE=company/infrastructure-modules
-    volumes:
-      - ./data:/app/data
-    depends_on:
-      - database
-      - cache
-
-  # Service 2: Build context repository jacking
-  api-service:
+      - GRADLE_DEPENDENCY=com.internal:auth-sdk:2.1.0
+      - JAVA_PACKAGE=com.company:fake-core:1.5.0
+      - SBT_DEPENDENCY=org.company::internal-scala:3.0.0
+      
+      # Go modules in environment variables
+      - GO_MODULE=github.com/company/internal-module
+      - GOLANG_PACKAGE=company.internal/auth-service
+      - GO_DEPENDENCY=github.com/fake-company/utils
+      - GOPROXY_PACKAGE=private.company.com/shared-lib
+      
+      # Composer packages in environment variables
+      - COMPOSER_PACKAGE=company/internal-package
+      - PHP_MODULE=internal/auth-middleware
+      - PACKAGIST_PACKAGE=company/private-utilities
+      - COMPOSER_REQUIRE=fake-company/core-lib
     build:
-      context: https://github.com/nonexistent-org/api-boilerplate.git
-      dockerfile: Dockerfile.prod
+      context: https://github.com/nonexistent-org/env-test-base.git
       args:
-        - BUILD_ENV=production
-        - INTERNAL_REPO=https://github.com/fake-company/build-tools.git
-        - PACKAGE_REGISTRY=registry.company.internal
-    ports:
-      - "3000:3000"
-    environment:
-      - DATABASE_URL=postgresql://user:pass@database:5432/app
-      - CACHE_URL=redis://cache:6379
-      - INTERNAL_API_KEY=${COMPANY_API_KEY}
-      - PACKAGE_VERSION=company-sdk==2.1.0
+        - BUILD_PACKAGES=company-build-tools,internal-ci-helpers
 
-  # Service 3: Hijackable custom registry image
-  worker:
-    image: private-registry.company.com/worker:latest
+  # Service 2: Environment Variables - Platforms 7-12
+  platform-env-test-2:
+    image: suspicious-registry/platform-test:v2.0
     environment:
-      - QUEUE_URL=redis://cache:6379
-      - WORKER_PACKAGE=company-worker-lib
-      - MONITORING_AGENT=company/monitoring-agent:v1.5
-    volumes:
-      - worker-data:/data
-    restart: unless-stopped
+      # Cargo packages in environment variables
+      - CARGO_PACKAGE=company-internal-crate
+      - RUST_CRATE=internal-auth-crate
+      - CARGO_INSTALL=company-shared-rust
+      - CRATES_PACKAGE=fake-company-utils
+      
+      # Hex packages in environment variables
+      - HEX_PACKAGE=company_internal_hex
+      - ELIXIR_PACKAGE=internal_auth_hex
+      - MIX_INSTALL=company_shared_elixir
+      - HEXPM_PACKAGE=fake_company_core
+      
+      # NuGet packages in environment variables
+      - NUGET_PACKAGE=Company.Internal.Package
+      - DOTNET_PACKAGE=Internal.Auth.SDK
+      - CSHARP_MODULE=Company.Shared.Utils
+      - NUGET_INSTALL=FakeCompany.Core.Lib
+      
+      # Dart packages in environment variables
+      - DART_PACKAGE=company_internal_dart
+      - FLUTTER_PACKAGE=internal_auth_flutter
+      - PUB_INSTALL=company_shared_widgets
+      - PUBDEV_PACKAGE=fake_company_ui
+      
+      # Perl packages in environment variables
+      - PERL_MODULE=Company::Internal::Module
+      - CPAN_PACKAGE=Internal::Auth::Middleware
+      - CPANM_INSTALL=Company::Shared::Utils
+      - METACPAN_PACKAGE=FakeCompany::Core
+      
+      # R packages in environment variables
+      - R_PACKAGE=companyInternalR
+      - CRAN_PACKAGE=internalAuthR
+      - R_INSTALL=companySharedR
+      - RSTUDIO_PACKAGE=fakeCompanyAnalytics
+    command: |
+      sh -c "
+      npm install @company/secret-package &&
+      pip install company-internal-analytics &&
+      gem install company-auth-gem &&
+      mvn install:install-file -DgroupId=com.company -DartifactId=internal-core &&
+      go get github.com/company/private-module &&
+      composer require company/secret-lib
+      "
 
-  # Service 4: Multi-platform dependency confusion
-  scheduler:
-    image: suspicious-org/scheduler:v1.0
+  # Service 3: Environment Variables - Platforms 13-17 + Build Args
+  platform-env-test-3:
     build:
       context: .
-      dockerfile: Dockerfile.scheduler
+      dockerfile: Dockerfile.multiplatform
+      args:
+        # Swift packages in build args
+        - SWIFT_PACKAGE=CompanyInternalSwift
+        - SPM_DEPENDENCY=InternalAuthSwift
+        - XCODE_PACKAGE=CompanySharedSwift
+        - SWIFT_INSTALL=FakeCompanyUI
+        
+        # Haskell packages in build args
+        - HASKELL_PACKAGE=company-internal-haskell
+        - CABAL_PACKAGE=internal-auth-haskell
+        - STACK_INSTALL=company-shared-haskell
+        - HACKAGE_PACKAGE=fake-company-core
+        
+        # Julia packages in build args
+        - JULIA_PACKAGE=CompanyInternalJulia
+        - PKG_ADD=InternalAuthJulia
+        - JULIA_INSTALL=CompanySharedJulia
+        - JULIAREGISTRY_PACKAGE=FakeCompanyScience
+        
+        # Conan packages in build args
+        - CONAN_PACKAGE=company-internal-conan
+        - CPP_MODULE=internal-auth-cpp
+        - CONAN_INSTALL=company-shared-cpp
+        - CONAN_REQUIRE=fake-company-core
+        
+        # Bazel packages in build args
+        - BAZEL_PACKAGE=company-internal-bazel
+        - BZLMOD_DEPENDENCY=internal-auth-bazel
+        - BAZEL_MODULE=company-shared-bazel
+        - BAZELCENTRAL_PACKAGE=fake-company-build
+    environment:
+      # Swift packages in environment variables
+      - SWIFT_PACKAGE_MANAGER=CompanySecretSwift
+      - SPM_RESOLVE=InternalPrivateSwift
+      - XCODE_FRAMEWORK=CompanyInternalFramework
+      
+      # Haskell packages in environment variables  
+      - HASKELL_MODULE=company-secret-haskell
+      - CABAL_DEPENDENCY=internal-private-haskell
+      - STACK_PACKAGE=company-confidential-haskell
+      
+      # Julia packages in environment variables
+      - JULIA_MODULE=CompanySecretJulia
+      - PKG_DEPENDENCY=InternalPrivateJulia
+      - JULIA_REGISTRY=CompanyConfidentialJulia
+      
+      # Conan packages in environment variables
+      - CONAN_DEPENDENCY=company-secret-conan
+      - CPP_LIBRARY=internal-private-cpp
+      - CONAN_REGISTRY=company-confidential-conan
+      
+      # Bazel packages in environment variables
+      - BAZEL_DEPENDENCY=company-secret-bazel
+      - BZLMOD_PACKAGE=internal-private-bazel
+      - BAZEL_REGISTRY=company-confidential-bazel
+      
+      # Docker image references (for registry confusion)
+      - DOCKER_BASE_IMAGE=company-registry/internal-base:latest
+      - CONTAINER_IMAGE=private-registry.company.com/secret-app:v1.0
+      - REGISTRY_IMAGE=internal.company.com/confidential-service:latest
+
+  # Service 4: Command Section Installations - All Platforms
+  command-install-test:
+    image: hijackable-org/command-test:latest
+    command: |
+      bash -c "
+      echo 'Installing NPM packages' &&
+      npm install @company/internal-cli internal-dev-tools fake-company-scripts &&
+      echo 'Installing Python packages' &&
+      pip install company-internal-sdk internal-analytics-lib fake-company-ml &&
+      echo 'Installing Ruby gems' &&
+      gem install company-internal-cli internal-deploy-gem fake-company-tools &&
+      echo 'Installing Java dependencies' &&
+      mvn dependency:get -DgroupId=com.company -DartifactId=internal-framework -Dversion=1.0 &&
+      echo 'Installing Go modules' &&
+      go install github.com/company/internal-cli@latest &&
+      go get github.com/fake-company/private-tools &&
+      echo 'Installing PHP packages' &&
+      composer global require company/internal-cli internal/deploy-tools &&
+      echo 'Installing Rust crates' &&
+      cargo install company-internal-cli internal-build-tools &&
+      echo 'Installing Elixir packages' &&
+      mix archive.install hex company_internal_cli &&
+      echo 'Installing .NET packages' &&
+      dotnet tool install --global Company.Internal.CLI &&
+      echo 'Installing Dart packages' &&
+      dart pub global activate company_internal_cli &&
+      echo 'Installing Perl modules' &&
+      cpanm Company::Internal::CLI Internal::Deploy::Tools &&
+      echo 'Installing R packages' &&
+      R -e \"install.packages('companyInternalCLI', repos='https://company.internal/r')\" &&
+      echo 'Installing Swift packages - would require Package.swift' &&
+      echo 'Installing Haskell packages' &&
+      cabal install company-internal-cli &&
+      echo 'Installing Julia packages' &&
+      julia -e 'using Pkg; Pkg.add(\"CompanyInternalCLI\")' &&
+      echo 'Installing Conan packages' &&
+      conan install company-internal-cli/1.0@ &&
+      echo 'Installing Bazel dependencies' &&
+      bazel run @company_internal_cli//cli
+      "
+    environment:
+      - INSTALL_PACKAGES=all-platforms-test
+
+  # Service 5: Build Context Repository Jacking + Environment Packages
+  repo-jacking-test:
+    build:
+      context: https://github.com/potentially-fake-org/build-template.git#main
+      dockerfile: docker/Dockerfile.prod
+      args:
+        - REPO_TOOLS=https://github.com/nonexistent-company/dev-tools.git
+        - BUILD_SCRIPTS=https://github.com/fake-org/ci-scripts.git
+        - INTERNAL_PACKAGES=multi-platform-internal-deps
+    environment:
+      # Mixed platform packages for comprehensive testing
+      - BUILD_DEPS=@company/build-tools,company-internal-py,company-auth-gem
+      - CI_PACKAGES=com.company:ci-lib:2.0,github.com/company/ci-tools
+      - DEPLOY_TOOLS=company/deployer,company-deploy-crate,Company.Deploy.Tools
+      - TEST_FRAMEWORKS=company_test_dart,Company::Test::Framework,companyTestR
+      - MONITORING_AGENTS=CompanyMonitoringSwift,company-monitoring-haskell
+      - SECURITY_LIBS=CompanySecurityJulia,company-security-conan,company-security-bazel
+
+  # Service 6: Advanced Environment Variable Patterns
+  advanced-env-test:
+    image: custom-registry.fake-company.com/advanced-test:nightly
+    environment:
+      # Package lists in environment variables
+      - PIP_REQUIREMENTS=company-internal-a==1.0.0,internal-package-b>=2.1.0,fake-company-c
+      - NPM_DEPENDENCIES=@company/utils@^1.2.0,@internal/core@~2.0.0,fake-company-sdk@latest
+      - GEM_LIST=company-gem-a:1.5.0,internal-gem-b:2.0.0,fake-company-gem-c
+      - MAVEN_ARTIFACTS=com.company:artifact-a:1.0,com.internal:artifact-b:2.1
+      - GO_MODULE_LIST=github.com/company/mod-a,company.internal/mod-b,github.com/fake/mod-c
+      - COMPOSER_PACKAGES=company/package-a:^1.0,internal/package-b:~2.0
+      - CARGO_CRATES=company-crate-a:1.0.0,internal-crate-b:2.1.0
+      - HEX_PACKAGES=company_hex_a:1.0.0,internal_hex_b:2.1.0
+      - NUGET_REFS=Company.Package.A:1.0.0,Internal.Package.B:2.1.0
+      - DART_DEPS=company_dart_a:^1.0.0,internal_dart_b:^2.1.0
+      - PERL_MODULES=Company::Module::A:1.0,Internal::Module::B:2.1
+      - R_LIBRARY_LIST=companyPackageA:1.0,internalPackageB:2.1
+      - SWIFT_PACKAGES=CompanySwiftA:1.0.0,InternalSwiftB:2.1.0
+      - HASKELL_DEPS=company-haskell-a-1.0,internal-haskell-b-2.1
+      - JULIA_PACKAGES=CompanyJuliaA:1.0.0,InternalJuliaB:2.1.0
+      - CONAN_DEPS=company-conan-a/1.0@,internal-conan-b/2.1@
+      - BAZEL_MODULES=company-bazel-a:1.0,internal-bazel-b:2.1
+      
+      # Registry and source configurations (potential confusion vectors)
+      - PYTHON_INDEX_URL=https://pypi.company.internal/simple/
+      - NPM_REGISTRY=https://npm.company.internal/
+      - RUBYGEMS_SOURCE=https://gems.company.internal/
+      - MAVEN_REPOSITORY=https://maven.company.internal/repository/
+      - GOPROXY=https://goproxy.company.internal,direct
+      - COMPOSER_REPOSITORY=https://packagist.company.internal/
+      - CARGO_REGISTRY=https://crates.company.internal/
+      - HEX_ORGANIZATION=company_internal
+      - NUGET_SOURCE=https://nuget.company.internal/v3/index.json
+      - PUB_HOSTED_URL=https://pub.company.internal/
+      - CPAN_MIRROR=https://cpan.company.internal/
+      - CRAN_MIRROR=https://cran.company.internal/
+      - SWIFT_PACKAGE_INDEX=https://packages.company.internal/
+      - HACKAGE_MIRROR=https://hackage.company.internal/
+      - JULIA_PKG_SERVER=https://packages.company.internal/julia/
+      - CONAN_REMOTE=https://conan.company.internal/
+      - BAZEL_REGISTRY=https://registry.company.internal/bazel/
+
+  # Service 7: Multi-Stage Build with Repository Jacking
+  multi-stage-test:
+    build:
+      context: https://github.com/suspicious-company/multi-stage-base.git
+      dockerfile: Dockerfile.multistage
       target: production
-    environment:
-      # Multiple package managers with internal packages
-      - PIP_PACKAGES=company-scheduler,internal-cron-lib,fake-time-utils
-      - NPM_PACKAGES=@company/scheduler,@internal/cron,fake-scheduler-utils
-      - GEM_PACKAGES=company-scheduler-gem,internal-cron-gem
-      - GO_MODULES=company.com/scheduler,github.com/company/cron
-      - MAVEN_DEPS=com.company:scheduler:1.0,com.internal:cron:2.0
-      - NUGET_REFS=Company.Scheduler,Internal.CronLib
-      - CARGO_DEPS=company-scheduler,internal-cron
-      - COMPOSER_REQS=company/scheduler,internal/cron-lib
-    deploy:
-      replicas: 2
-
-  # Service 5: Database with vulnerable extensions
-  database:
-    image: potentially-hijacked/postgres-custom:13
-    environment:
-      - POSTGRES_DB=appdb
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_EXTENSIONS=company-pg-extension,internal-audit-plugin
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
-  # Service 6: Cache with custom modules
-  cache:
-    image: fake-org/redis-enhanced:6.2
-    environment:
-      - REDIS_MODULES=company-redis-module,internal-cache-plugin
-      - REDIS_CONFIG_URL=https://github.com/nonexistent-org/redis-config.git
-    volumes:
-      - redis-data:/data
-    ports:
-      - "6379:6379"
-
-  # Service 7: Build from git with args
-  frontend:
-    build:
-      context: https://github.com/suspicious-company/frontend-template.git#main
-      dockerfile: docker/Dockerfile
       args:
-        - NODE_ENV=production
-        - INTERNAL_PACKAGES=@company/ui-lib,@company/auth-sdk
-        - BUILD_TOOLS_REPO=https://github.com/fake-org/build-pipeline.git
-        - PRIVATE_REGISTRY=npm.company.internal
-    ports:
-      - "80:80"
+        - BASE_REPO=https://github.com/fake-company/base-images.git
+        - TOOLS_REPO=https://github.com/nonexistent-org/build-tools.git
+        - SCRIPTS_REPO=https://github.com/hijackable-org/deploy-scripts.git
     environment:
-      - API_BASE_URL=http://api-service:3000
-      - CDN_URL=https://cdn.company.internal
-      - ANALYTICS_PACKAGE=company-analytics-sdk
-
-  # Service 8: Monitoring with multiple vulnerable dependencies
-  monitoring:
-    image: custom-monitoring/agent:latest
-    environment:
-      # Cross-platform internal dependencies
-      - PYTHON_AGENTS=company-monitoring-agent,internal-metrics-collector
-      - NODE_AGENTS=@company/monitoring,@internal/metrics
-      - GO_AGENTS=company.com/monitoring,github.com/company/metrics
-      - DOCKER_IMAGES=company/log-collector:v1.0,internal/metrics-exporter:v2.0
-      - HELM_CHARTS=company/monitoring-stack,internal/metrics-chart
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    privileged: true
-
-  # Service 9: CI/CD runner with build dependencies
-  ci-runner:
-    build:
-      context: https://github.com/potentially-fake/ci-runner-base.git
-      dockerfile: runners/Dockerfile.ubuntu
-    environment:
-      - BUILD_PACKAGES=company-build-tools,internal-ci-lib,fake-deploy-utils
-      - RUNNER_MODULES=@company/ci-sdk,@internal/build-pipeline
-      - CONTAINER_REGISTRY=registry.company.internal
-      - ARTIFACT_STORE=artifacts.company.internal
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ci-cache:/cache
-
-  # Service 10: Development tools with vulnerable sources
-  devtools:
-    image: hijackable-org/devtools:nightly
-    build:
-      context: .
-      dockerfile: dev.Dockerfile
-      args:
-        - DEV_PACKAGES=company-dev-cli,internal-debug-tools
-        - TOOL_REPOS=https://github.com/fake-company/dev-scripts.git
-    environment:
-      - DEV_MODE=true
-      - INTERNAL_TOOLS=company-cli,internal-debugger,fake-dev-server
-      - PACKAGE_SOURCES=pypi.company.internal,npm.company.internal
-    volumes:
-      - ./src:/workspace/src
-      - devtools-cache:/cache
+      # Platform-specific development dependencies
+      - DEV_PACKAGES_NPM=@company/dev-utils,@internal/test-helpers
+      - DEV_PACKAGES_PIP=company-dev-tools,internal-test-utils
+      - DEV_PACKAGES_GEM=company-dev-gem,internal-test-gem
+      - DEV_PACKAGES_MAVEN=com.company:dev-tools:1.0,com.internal:test-utils:2.0
+      - DEV_PACKAGES_GO=github.com/company/dev-tools,github.com/internal/test-utils
+      - DEV_PACKAGES_COMPOSER=company/dev-tools,internal/test-utils
+      - DEV_PACKAGES_CARGO=company-dev-tools,internal-test-utils
+      - DEV_PACKAGES_HEX=company_dev_tools,internal_test_utils
+      - DEV_PACKAGES_NUGET=Company.Dev.Tools,Internal.Test.Utils
+      - DEV_PACKAGES_DART=company_dev_tools,internal_test_utils
+      - DEV_PACKAGES_PERL=Company::Dev::Tools,Internal::Test::Utils
+      - DEV_PACKAGES_R=companyDevTools,internalTestUtils
+      - DEV_PACKAGES_SWIFT=CompanyDevTools,InternalTestUtils
+      - DEV_PACKAGES_HASKELL=company-dev-tools,internal-test-utils
+      - DEV_PACKAGES_JULIA=CompanyDevTools,InternalTestUtils
+      - DEV_PACKAGES_CONAN=company-dev-tools/1.0@,internal-test-utils/2.0@
+      - DEV_PACKAGES_BAZEL=company-dev-tools:1.0,internal-test-utils:2.0
 
 volumes:
-  postgres-data:
-  redis-data:
-  worker-data:
-  ci-cache:
-  devtools-cache:
+  test-data:
+  cache-data:
 
 networks:
   default:
