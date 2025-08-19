@@ -1,0 +1,178 @@
+version: '3.8'
+
+# Test Docker Compose for Dependency Confusion and Repository Jacking Detection
+# This file contains intentional vulnerabilities for testing purposes
+
+services:
+  # Service 1: Custom image repository jacking test
+  web-app:
+    image: fake-company/internal-webapp:latest
+    container_name: vulnerable-webapp
+    ports:
+      - "8080:8080"
+    environment:
+      # Environment variables referencing internal packages
+      - PYTHON_PACKAGE=company-internal-lib==1.2.3
+      - NODE_MODULE=@company/secret-utils
+      - RUBY_GEM=internal-company-gem
+      - GO_MODULE=github.com/company/private-module
+      - MAVEN_ARTIFACT=com.company:internal-lib:1.0.0
+      - NUGET_PACKAGE=Company.InternalPackage
+      - CARGO_CRATE=company-internal-crate
+      - COMPOSER_PACKAGE=company/private-package
+      - DOCKER_IMAGE=company-registry/internal-tool:v2.1
+      - HELM_CHART=company/internal-chart
+      - TERRAFORM_MODULE=company/infrastructure-modules
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - database
+      - cache
+
+  # Service 2: Build context repository jacking
+  api-service:
+    build:
+      context: https://github.com/nonexistent-org/api-boilerplate.git
+      dockerfile: Dockerfile.prod
+      args:
+        - BUILD_ENV=production
+        - INTERNAL_REPO=https://github.com/fake-company/build-tools.git
+        - PACKAGE_REGISTRY=registry.company.internal
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@database:5432/app
+      - CACHE_URL=redis://cache:6379
+      - INTERNAL_API_KEY=${COMPANY_API_KEY}
+      - PACKAGE_VERSION=company-sdk==2.1.0
+
+  # Service 3: Hijackable custom registry image
+  worker:
+    image: private-registry.company.com/worker:latest
+    environment:
+      - QUEUE_URL=redis://cache:6379
+      - WORKER_PACKAGE=company-worker-lib
+      - MONITORING_AGENT=company/monitoring-agent:v1.5
+    volumes:
+      - worker-data:/data
+    restart: unless-stopped
+
+  # Service 4: Multi-platform dependency confusion
+  scheduler:
+    image: suspicious-org/scheduler:v1.0
+    build:
+      context: .
+      dockerfile: Dockerfile.scheduler
+      target: production
+    environment:
+      # Multiple package managers with internal packages
+      - PIP_PACKAGES=company-scheduler,internal-cron-lib,fake-time-utils
+      - NPM_PACKAGES=@company/scheduler,@internal/cron,fake-scheduler-utils
+      - GEM_PACKAGES=company-scheduler-gem,internal-cron-gem
+      - GO_MODULES=company.com/scheduler,github.com/company/cron
+      - MAVEN_DEPS=com.company:scheduler:1.0,com.internal:cron:2.0
+      - NUGET_REFS=Company.Scheduler,Internal.CronLib
+      - CARGO_DEPS=company-scheduler,internal-cron
+      - COMPOSER_REQS=company/scheduler,internal/cron-lib
+    deploy:
+      replicas: 2
+
+  # Service 5: Database with vulnerable extensions
+  database:
+    image: potentially-hijacked/postgres-custom:13
+    environment:
+      - POSTGRES_DB=appdb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_EXTENSIONS=company-pg-extension,internal-audit-plugin
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # Service 6: Cache with custom modules
+  cache:
+    image: fake-org/redis-enhanced:6.2
+    environment:
+      - REDIS_MODULES=company-redis-module,internal-cache-plugin
+      - REDIS_CONFIG_URL=https://github.com/nonexistent-org/redis-config.git
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+
+  # Service 7: Build from git with args
+  frontend:
+    build:
+      context: https://github.com/suspicious-company/frontend-template.git#main
+      dockerfile: docker/Dockerfile
+      args:
+        - NODE_ENV=production
+        - INTERNAL_PACKAGES=@company/ui-lib,@company/auth-sdk
+        - BUILD_TOOLS_REPO=https://github.com/fake-org/build-pipeline.git
+        - PRIVATE_REGISTRY=npm.company.internal
+    ports:
+      - "80:80"
+    environment:
+      - API_BASE_URL=http://api-service:3000
+      - CDN_URL=https://cdn.company.internal
+      - ANALYTICS_PACKAGE=company-analytics-sdk
+
+  # Service 8: Monitoring with multiple vulnerable dependencies
+  monitoring:
+    image: custom-monitoring/agent:latest
+    environment:
+      # Cross-platform internal dependencies
+      - PYTHON_AGENTS=company-monitoring-agent,internal-metrics-collector
+      - NODE_AGENTS=@company/monitoring,@internal/metrics
+      - GO_AGENTS=company.com/monitoring,github.com/company/metrics
+      - DOCKER_IMAGES=company/log-collector:v1.0,internal/metrics-exporter:v2.0
+      - HELM_CHARTS=company/monitoring-stack,internal/metrics-chart
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    privileged: true
+
+  # Service 9: CI/CD runner with build dependencies
+  ci-runner:
+    build:
+      context: https://github.com/potentially-fake/ci-runner-base.git
+      dockerfile: runners/Dockerfile.ubuntu
+    environment:
+      - BUILD_PACKAGES=company-build-tools,internal-ci-lib,fake-deploy-utils
+      - RUNNER_MODULES=@company/ci-sdk,@internal/build-pipeline
+      - CONTAINER_REGISTRY=registry.company.internal
+      - ARTIFACT_STORE=artifacts.company.internal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ci-cache:/cache
+
+  # Service 10: Development tools with vulnerable sources
+  devtools:
+    image: hijackable-org/devtools:nightly
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+      args:
+        - DEV_PACKAGES=company-dev-cli,internal-debug-tools
+        - TOOL_REPOS=https://github.com/fake-company/dev-scripts.git
+    environment:
+      - DEV_MODE=true
+      - INTERNAL_TOOLS=company-cli,internal-debugger,fake-dev-server
+      - PACKAGE_SOURCES=pypi.company.internal,npm.company.internal
+    volumes:
+      - ./src:/workspace/src
+      - devtools-cache:/cache
+
+volumes:
+  postgres-data:
+  redis-data:
+  worker-data:
+  ci-cache:
+  devtools-cache:
+
+networks:
+  default:
+    driver: bridge
+  internal:
+    driver: bridge
+    internal: true
